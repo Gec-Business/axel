@@ -29,8 +29,9 @@ export async function POST(request: NextRequest) {
   }
 
   // Resolve assets
-  const assets = post.asset_ids.length > 0 ? await getAssetsByIds(post.asset_ids) : [];
-  const imageUrls = assets.filter(a => a.mime_type.startsWith('image/')).map(a => a.public_url);
+  const assetIds = post.asset_ids ?? [];
+  const assets = assetIds.length > 0 ? await getAssetsByIds(assetIds) : [];
+  const imageUrls = assets.filter(a => a.mime_type.startsWith('image/')).map(a => a.public_url).filter(Boolean) as string[];
   const videoAsset = assets.find(a => a.mime_type.startsWith('video/'));
 
   const caption = buildCaption(post, platform);

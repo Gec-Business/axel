@@ -252,6 +252,28 @@ export async function deleteAsset(id: string): Promise<void> {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Atomic post claiming (prevents duplicate publishing)              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Atomically claim a post for publishing.
+ * Only succeeds if the post status is still 'approved'.
+ * Returns true if claimed, false if already claimed by another process.
+ */
+export async function claimPostForPublishing(id: string): Promise<boolean> {
+  const db = getClient();
+  const { data, error } = await db
+    .from('posts')
+    .update({ status: 'publishing', updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('status', 'approved')  // Only update if still approved
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  return data !== null;  // null = no row matched (already claimed)
+}
+
+/* ------------------------------------------------------------------ */
 /*  Approved posts for cron                                           */
 /* ------------------------------------------------------------------ */
 

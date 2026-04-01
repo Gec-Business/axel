@@ -283,8 +283,8 @@ async function igCreateCarouselContainer(
 }
 
 async function igPublish(containerId: string): Promise<string> {
-  // Wait 5 seconds before publishing to allow container processing
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // Poll container status before publishing (more reliable than hardcoded wait)
+  await igWaitForProcessing(containerId, 30_000);
 
   const res = await fetch(`${GRAPH_API}/${igId()}/media_publish`, {
     method: 'POST',

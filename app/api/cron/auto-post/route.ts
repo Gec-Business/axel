@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getApprovedPostsForToday, updatePost, getAssetsByIds, addAuditLog } from '@/lib/supabase';
+import { getApprovedPostsForToday, updatePost, getAssetsByIds, addAuditLog, claimPostForPublishing } from '@/lib/supabase';
 import { publishPost } from '@/lib/social-publisher';
 import { buildCaption, getTodayDate } from '@/lib/utils';
 import { SITE_CONFIG } from '@/lib/config';
@@ -22,28 +22,36 @@ export async function POST(request: NextRequest) {
 
   for (const post of posts) {
     // Atomically claim the post by setting status to 'publishing'
-    const claimed = await updatePost(post.id, { status: 'publishing' });
-    if (!claimed) {
+    // Use a conditional update: only update if status is still 'approved'
+    try {
+      const claimed = await claimPostForPublishing(post.id);
+      if (!claimed) {
+        skipped.push(`${post.id} — already claimed by another process`);
+        continue;
+      }
+    } catch {
       skipped.push(`${post.id} — failed to claim`);
       continue;
     }
 
     // Resolve assets
-    const assets = post.asset_ids.length > 0 ? await getAssetsByIds(post.asset_ids) : [];
-    const imageUrls = assets.filter(a => a.mime_type.startsWith('image/')).map(a => a.public_url);
+    const assetIds = post.asset_ids ?? [];
+    const assets = assetIds.length > 0 ? await getAssetsByIds(assetIds) : [];
+    const imageUrls = assets.filter(a => a.mime_type.startsWith('image/')).map(a => a.public_url).filter(Boolean) as string[];
     const videoAsset = assets.find(a => a.mime_type.startsWith('video/'));
 
-    const publishResults = { ...(post.publish_results || {}) };
+    const publishResults: Record<string, unknown> = { ...(post.publish_results || {}) };
     let allSucceeded = true;
 
     for (const platform of post.platforms as Platform[]) {
       // Skip if already posted on this platform
-      if (publishResults[platform]?.posted) {
+      const existing = publishResults[platform] as { posted?: boolean } | undefined;
+      if (existing?.posted) {
         skipped.push(`${post.id}/${platform} — already posted`);
         continue;
       }
 
-      const caption = buildCaption(post as Post, platform);
+      const caption = buildCaption(post, platform);
 
       const result = await publishPost(platform, caption, post.content_type, {
         imageUrl: imageUrls[0],

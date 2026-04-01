@@ -16,7 +16,8 @@ export async function GET() {
 
   const redirectUri = `${SITE_CONFIG.url}/api/linkedin/callback`;
   const state = crypto.randomUUID();
-  const scope = 'w_member_social w_organization_social r_organization_social openid profile';
+  // Community Management API scopes (w_member_social/w_organization_social deprecated June 2023)
+  const scope = 'openid profile w_member_social rw_organization_admin';
 
   const authUrl = new URL('https://www.linkedin.com/oauth/v2/authorization');
   authUrl.searchParams.set('response_type', 'code');

@@ -136,8 +136,9 @@ export async function fetchLinkedInMetrics(
   accessToken: string,
 ): Promise<PostMetrics | null> {
   try {
+    // Use socialMetadata API (socialActions is deprecated)
     const encodedPostId = encodeURIComponent(postId);
-    const url = `${LINKEDIN_API}/rest/socialActions/${encodedPostId}`;
+    const url = `${LINKEDIN_API}/rest/socialMetadata/${encodedPostId}`;
 
     const res = await fetch(url, {
       method: 'GET',
@@ -149,27 +150,38 @@ export async function fetchLinkedInMetrics(
     });
 
     if (!res.ok) {
-      throw new Error(
-        `LinkedIn API error: ${res.status} ${res.statusText}`,
-      );
+      // Fallback to socialActions if socialMetadata not available
+      const fallbackUrl = `${LINKEDIN_API}/rest/socialActions/${encodedPostId}`;
+      const fallbackRes = await fetch(fallbackUrl, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'LinkedIn-Version': LINKEDIN_VERSION,
+          'X-Restli-Protocol-Version': '2.0.0',
+        },
+      });
+      if (!fallbackRes.ok) {
+        throw new Error(`LinkedIn API error: ${res.status}`);
+      }
+      const fallbackData = (await fallbackRes.json()) as Record<string, unknown>;
+      const likesData = fallbackData.likesSummary as Record<string, number> | undefined;
+      const commentsData = fallbackData.commentsSummary as Record<string, number> | undefined;
+      return {
+        likes: likesData?.totalLikes ?? 0,
+        comments: commentsData?.totalFirstLevelComments ?? commentsData?.totalComments ?? 0,
+        shares: 0, // Not available via socialActions
+      };
     }
 
     const data = (await res.json()) as Record<string, unknown>;
-
-    const likesData = data.likesSummary as
-      | Record<string, number>
-      | undefined;
-    const commentsData = data.commentsSummary as
-      | Record<string, number>
-      | undefined;
-    const sharesData = data.sharesSummary as
-      | Record<string, number>
-      | undefined;
+    const reactionSummary = data.reactionSummary as Record<string, number> | undefined;
+    const commentSummary = data.commentSummary as Record<string, number> | undefined;
+    const shareSummary = data.shareSummary as Record<string, number> | undefined;
 
     return {
-      likes: likesData?.totalLikes ?? likesData?.count ?? 0,
-      comments: commentsData?.totalComments ?? commentsData?.count ?? 0,
-      shares: sharesData?.totalShares ?? sharesData?.count ?? 0,
+      likes: reactionSummary?.totalCount ?? 0,
+      comments: commentSummary?.totalFirstLevelComments ?? 0,
+      shares: shareSummary?.totalCount ?? 0,
     };
   } catch (err) {
     console.error('fetchLinkedInMetrics error:', err);

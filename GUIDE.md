@@ -312,10 +312,10 @@ From the app's **Auth** tab:
 ### 4.3 Request Required Products
 
 In the **Products** tab, request access to:
-- **Share on LinkedIn** (for posting to the company page)
+- **Community Management API** (for posting to the company page — replaces deprecated Share on LinkedIn)
 - **Sign In with LinkedIn using OpenID Connect** (for OAuth)
 
-These are usually auto-approved for verified company pages.
+Request Community Management API access (Development or Standard tier). The old `w_organization_social` scope was deprecated in June 2023. These are usually auto-approved for verified company pages.
 
 ### 4.4 Configure OAuth Redirect
 
