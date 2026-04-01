@@ -36,15 +36,15 @@ export async function POST(request: NextRequest) {
 
   const mimeType = file.type;
   const sizeBytes = file.size;
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-  // Validate file
-  const validation = validateAssetFile(mimeType, sizeBytes);
+  // Validate file — checks MIME type, size limits, AND magic bytes
+  const validation = validateAssetFile(mimeType, sizeBytes, buffer);
   if (!validation.valid) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
   const id = crypto.randomUUID();
-  const buffer = Buffer.from(await file.arrayBuffer());
 
   // Store in Netlify Blobs
   await saveAssetFile(id, buffer, mimeType);
