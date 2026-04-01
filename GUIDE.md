@@ -48,14 +48,14 @@ Supabase provides the PostgreSQL database for posts, campaigns, settings, and au
    - **Region:** Choose the closest to Georgia (e.g., `eu-central-1` Frankfurt)
 4. Wait for the project to provision (~2 minutes)
 
-### 3.2 Get Connection Details
+### 2.2 Get Connection Details
 
 From the Supabase Dashboard → **Settings** → **API**:
 - **Project URL** → save as `SUPABASE_URL`
 - **anon/public key** → save as `SUPABASE_ANON_KEY`
 - **service_role key** → save as `SUPABASE_SERVICE_KEY` (keep this secret!)
 
-### 3.3 Create Database Tables
+### 2.3 Create Database Tables
 
 Go to **SQL Editor** in Supabase Dashboard and run:
 
@@ -129,6 +129,24 @@ CREATE TABLE settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Assets metadata (binary files stored in Netlify Blobs)
+CREATE TABLE assets (
+  id UUID PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  name TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'general',
+  tags TEXT[] DEFAULT '{}',
+  mime_type TEXT NOT NULL,
+  size_bytes BIGINT NOT NULL,
+  width INTEGER,
+  height INTEGER,
+  storage_type TEXT NOT NULL DEFAULT 'blob',
+  blob_key TEXT,
+  cloudinary_url TEXT,
+  thumbnail_url TEXT,
+  public_url TEXT
+);
+
 -- LinkedIn tokens (stored in DB instead of Blobs for reliability)
 CREATE TABLE linkedin_tokens (
   id TEXT PRIMARY KEY DEFAULT 'current',
@@ -140,6 +158,8 @@ CREATE TABLE linkedin_tokens (
 );
 
 -- Indexes for common queries
+CREATE INDEX idx_assets_category ON assets(category);
+CREATE INDEX idx_assets_created ON assets(created_at DESC);
 CREATE INDEX idx_posts_status ON posts(status);
 CREATE INDEX idx_posts_scheduled_date ON posts(scheduled_date);
 CREATE INDEX idx_posts_campaign_id ON posts(campaign_id);
@@ -162,7 +182,7 @@ CREATE TRIGGER campaigns_updated_at BEFORE UPDATE ON campaigns
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ```
 
-### 3.4 Enable Row Level Security (RLS)
+### 2.4 Enable Row Level Security (RLS)
 
 For the free tier with server-side access only (using service_role key), RLS can be kept simple:
 
@@ -179,6 +199,7 @@ CREATE POLICY "Service role full access" ON posts FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON campaigns FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON audit_log FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON settings FOR ALL USING (true);
+CREATE POLICY "Service role full access" ON assets FOR ALL USING (true);
 CREATE POLICY "Service role full access" ON linkedin_tokens FOR ALL USING (true);
 ```
 

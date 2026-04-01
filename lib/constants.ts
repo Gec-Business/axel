@@ -54,6 +54,12 @@ export interface Post {
   /** Status */
   status: PostStatus;
 
+  /** Topic / subject */
+  topic: string;
+
+  /** Goal: Awareness, Conversion, Engagement, etc. */
+  goal: string;
+
   /** Default copy (Georgian / English) */
   copy_ka: string;
   copy_en: string;
@@ -74,11 +80,20 @@ export interface Post {
   hashtags_instagram?: string[];
   hashtags_linkedin?: string[];
 
+  /** UTM-tagged link */
+  utm_link?: string;
+
   /** Attached asset IDs */
   asset_ids?: string[];
 
   /** Publishing results per platform */
   publish_results?: Record<Platform, PublishResult>;
+
+  /** When approved */
+  approved_at?: string;
+
+  /** Whether AI-generated */
+  ai_generated?: boolean;
 
   /** Free-form notes */
   notes?: string;
@@ -94,7 +109,7 @@ export interface Campaign {
   pillar: ContentPillar;
   start_date: string;
   end_date: string;
-  status: 'active' | 'completed' | 'draft';
+  status: 'planning' | 'active' | 'completed' | 'archived';
 }
 
 export interface Asset {

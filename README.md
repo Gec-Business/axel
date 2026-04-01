@@ -32,10 +32,11 @@ A social media management system built for [Axel Network](https://axelnetwork.or
 
 | Document | Description |
 |----------|-------------|
+| [GETTING-STARTED.md](GETTING-STARTED.md) | **Start here** -- Prompts for Axel team using Claude Code Max |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture, data models, project structure, API design |
-| [GUIDE.md](GUIDE.md) | Step-by-step setup guide: Meta, LinkedIn, Netlify, Cloudinary, environment variables |
-| [BRAND-VOICE.md](BRAND-VOICE.md) | Brand voice questionnaire for Axel team + AI content guidelines |
-| [COSTS.md](COSTS.md) | Monthly cost analysis for running this system |
+| [GUIDE.md](GUIDE.md) | Detailed setup: Supabase, Meta, LinkedIn, Cloudinary, Netlify |
+| [BRAND-VOICE.md](BRAND-VOICE.md) | Brand voice questionnaire + AI content guidelines |
+| [COSTS.md](COSTS.md) | Monthly cost analysis ($5-15/mo) |
 
 ## Quick Start
 

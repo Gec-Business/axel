@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type {
   Post,
   Campaign,
+  Asset,
   ContentPillar,
   PostStatus,
   Platform,
@@ -197,6 +198,76 @@ export async function deleteCampaign(id: string): Promise<void> {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Assets                                                            */
+/* ------------------------------------------------------------------ */
+
+export interface AssetFilters {
+  category?: string;
+  tag?: string;
+  mime_type?: string;
+}
+
+export async function getAllAssets(filters?: AssetFilters): Promise<Asset[]> {
+  const db = getClient();
+  let query = db.from('assets').select('*').order('created_at', { ascending: false });
+  if (filters?.category) query = query.eq('category', filters.category);
+  if (filters?.mime_type) query = query.eq('mime_type', filters.mime_type);
+  if (filters?.tag) query = query.contains('tags', [filters.tag]);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as Asset[];
+}
+
+export async function getAsset(id: string): Promise<Asset | null> {
+  const db = getClient();
+  const { data, error } = await db.from('assets').select('*').eq('id', id).single();
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  return data as Asset;
+}
+
+export async function getAssetsByIds(ids: string[]): Promise<Asset[]> {
+  if (ids.length === 0) return [];
+  const db = getClient();
+  const { data, error } = await db.from('assets').select('*').in('id', ids);
+  if (error) throw error;
+  return (data ?? []) as Asset[];
+}
+
+export async function createAsset(
+  data: Omit<Asset, 'created_at'>,
+): Promise<Asset> {
+  const db = getClient();
+  const { data: created, error } = await db.from('assets').insert(data).select().single();
+  if (error) throw error;
+  return created as Asset;
+}
+
+export async function deleteAsset(id: string): Promise<void> {
+  const db = getClient();
+  const { error } = await db.from('assets').delete().eq('id', id);
+  if (error) throw error;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Approved posts for cron                                           */
+/* ------------------------------------------------------------------ */
+
+export async function getApprovedPostsForToday(today: string): Promise<Post[]> {
+  const db = getClient();
+  const { data, error } = await db
+    .from('posts')
+    .select('*')
+    .eq('status', 'approved')
+    .lte('scheduled_date', today)
+    .order('scheduled_date', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as Post[];
+}
+
+/* ------------------------------------------------------------------ */
 /*  Audit log                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -204,7 +275,7 @@ export async function addAuditLog(
   action: string,
   entity_type: string,
   entity_id?: string,
-  details?: string,
+  details?: Record<string, unknown>,
 ): Promise<void> {
   const db = getClient();
   const { error } = await db
@@ -216,12 +287,11 @@ export async function addAuditLog(
 }
 
 /* ------------------------------------------------------------------ */
-/*  Settings (key-value)                                              */
+/*  Settings (key-value — stores JSONB)                               */
 /* ------------------------------------------------------------------ */
 
-export async function getSettings(
-  key: string,
-): Promise<string | null> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getSettings(key: string): Promise<any> {
   const db = getClient();
   const { data, error } = await db
     .from('settings')
@@ -232,12 +302,13 @@ export async function getSettings(
     if (error.code === 'PGRST116') return null;
     throw error;
   }
-  return (data?.value as string) ?? null;
+  return data?.value ?? null;
 }
 
 export async function setSetting(
   key: string,
-  value: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  value: any,
 ): Promise<void> {
   const db = getClient();
   const { error } = await db

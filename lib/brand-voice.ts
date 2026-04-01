@@ -1,23 +1,22 @@
 export const AXEL_BRAND_VOICE = {
   name: 'Axel Network',
-  tagline: 'Empowering Georgia\'s Digital Future',
+  tagline: 'Georgian Angel Investor Network',
   website: 'https://axelnetwork.org',
 
   tone: [
-    'professional yet approachable',
-    'community-driven',
-    'innovation-focused',
-    'inclusive and encouraging',
-    'confident without being arrogant',
+    'Professional but approachable',
+    'Knowledgeable about startup ecosystems and angel investing',
+    'Encouraging and empowering toward founders and new investors',
+    'Community-oriented — emphasize the network, not individual ego',
+    'Forward-looking — Georgia as an emerging innovation hub',
   ],
 
-  audienceSegments: [
-    'aspiring developers and designers in Georgia',
-    'tech professionals looking to upskill',
-    'startups and entrepreneurs in the Caucasus region',
-    'international partners and collaborators',
-    'university students exploring tech careers',
-  ],
+  audienceSegments: {
+    angelInvestors: 'Experienced business people in Georgia considering angel investing',
+    startupFounders: 'Georgian startup founders seeking investment and mentorship',
+    academyParticipants: 'People interested in learning angel investing (Georgian + Central Asian markets)',
+    generalEcosystem: 'Startup ecosystem stakeholders in Georgia and Central Asia',
+  },
 
   languages: {
     ka: {
@@ -25,72 +24,46 @@ export const AXEL_BRAND_VOICE = {
       name: 'Georgian',
       nativeName: 'ქართული',
       notes:
-        'Primary language. Always lead with Georgian copy. Use natural, modern Georgian — avoid overly formal or bureaucratic phrasing.',
+        'Primary language. Always lead with Georgian copy. Use formal but warm Georgian. Avoid overly academic language. Startup/business English loanwords are normal in Georgian startup community.',
     },
     en: {
       code: 'en',
       name: 'English',
       nativeName: 'English',
       notes:
-        'Secondary language for international reach. Keep it concise and clear. Follow Georgian copy separated by a divider.',
+        'Secondary language for international reach. Professional English. For LinkedIn focus on industry credibility. For Facebook/Instagram be slightly more casual.',
     },
   },
 
   pillarGuidelines: {
     academy:
-      'Highlight learning outcomes, mentor expertise, and student success stories. Use encouraging language that makes tech education feel accessible.',
+      'Highlight learning outcomes, instructor credibility, practical value, cohort community. Use urgency for enrollment periods. Mention both Georgian batch and Central Asia online batch.',
     members:
-      'Celebrate community achievements. Spotlight individual members and their journeys. Foster a sense of belonging.',
+      'Spotlight individual angel investors — their background, why they joined, what they look for in startups. Personal storytelling to attract new members.',
     events:
-      'Create excitement and urgency. Include clear date, time, location, and registration info. Use action-oriented language.',
+      'Build excitement, share key takeaways, highlight speakers/panelists. Post-event: share photos, quotes, metrics. Quarterly events.',
     portfolio:
-      'Showcase completed work with pride. Focus on impact and results. Credit team members and partners.',
+      'Celebrate startup achievements, share traction metrics, tell founder stories. Position Axel as a value-adding investor.',
     general:
-      'Reinforce brand values and mission. Share industry insights relevant to the Georgian tech ecosystem.',
+      'Ecosystem thought leadership, market insights, angel investing education, Georgian startup scene news.',
   },
 
   hashtagSets: {
-    core: [
-      '#AxelNetwork',
-      '#AxelGeorgia',
-      '#TechGeorgia',
-      '#DigitalGeorgia',
-    ],
-    academy: [
-      '#AxelAcademy',
-      '#LearnToCode',
-      '#TechEducation',
-      '#GeorgianTech',
-    ],
-    members: [
-      '#AxelCommunity',
-      '#MemberSpotlight',
-      '#TechCommunity',
-    ],
-    events: [
-      '#AxelEvents',
-      '#TechMeetup',
-      '#TbilisiTech',
-    ],
-    portfolio: [
-      '#AxelPortfolio',
-      '#MadeByAxel',
-      '#CaseStudy',
-    ],
-    ecosystem: [
-      '#StartupGeorgia',
-      '#CaucasusTech',
-      '#InnovationHub',
-    ],
+    core: ['#AxelNetwork', '#AngelInvesting', '#GeorgianStartups'],
+    academy: ['#AngelInvestorAcademy', '#InvestorEducation', '#LearnToInvest'],
+    members: ['#AngelInvestor', '#SmartMoney', '#InvestorSpotlight'],
+    events: ['#StartupEvent', '#InvestorMeetup', '#TbilisiStartups'],
+    portfolio: ['#PortfolioUpdate', '#StartupGrowth', '#MadeInGeorgia'],
+    ecosystem: ['#TechGeorgia', '#EmergingMarkets', '#StartupEcosystem'],
   },
 
   doNot: [
-    'Use slang or overly casual language that undermines professionalism',
-    'Make promises about specific job placements or salary outcomes',
-    'Use political or divisive language',
-    'Post content without both Georgian and English versions',
-    'Use stock-photo aesthetics — prefer authentic community imagery',
-    'Overuse emojis — keep them purposeful and minimal',
-    'Publish without proofreading both language versions',
+    'Never promise investment returns or financial guarantees',
+    'Never disparage other investor networks or accelerators',
+    'Never share confidential deal information or financials',
+    'Avoid overly salesy or pushy language — lead with value',
+    'Avoid AI-generic phrases ("In today\'s fast-paced world...", "Exciting news!")',
+    'Never post without both Georgian and English versions',
+    'Avoid overusing emojis — keep them purposeful and minimal',
   ],
 } as const;

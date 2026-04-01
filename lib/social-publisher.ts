@@ -181,7 +181,7 @@ async function postVideoToFacebook(
 // ---------------------------------------------------------------------------
 
 function igId(): string {
-  return env('META_PAGE_ID');
+  return env('META_IG_ACCOUNT_ID');
 }
 
 function igToken(): string {
@@ -624,35 +624,22 @@ export async function publishPost(
 ): Promise<PublishResult> {
   try {
     switch (platform) {
-      // ------------------------------------------------------------------
-      // Facebook
-      // ------------------------------------------------------------------
-      case Platform.Facebook: {
-        if (contentType === ContentType.Video && opts.videoUrl) {
+      case 'facebook': {
+        if (contentType === 'video' && opts.videoUrl) {
           return await postVideoToFacebook(caption, opts.videoUrl);
         }
         return await postToFacebook(caption, opts.imageUrl);
       }
 
-      // ------------------------------------------------------------------
-      // Instagram
-      // ------------------------------------------------------------------
-      case Platform.Instagram: {
-        if (
-          contentType === ContentType.Video ||
-          contentType === ContentType.Reel
-        ) {
+      case 'instagram': {
+        if (contentType === 'video' || contentType === 'reel') {
           if (!opts.videoUrl) {
             return { success: false, error: 'videoUrl is required for Instagram video/reel' };
           }
           return await postReelToInstagram(caption, opts.videoUrl);
         }
 
-        if (
-          contentType === ContentType.Carousel &&
-          opts.imageUrls &&
-          opts.imageUrls.length >= 2
-        ) {
+        if (contentType === 'carousel' && opts.imageUrls && opts.imageUrls.length >= 2) {
           return await postToInstagram(caption, opts.imageUrls);
         }
 
@@ -664,22 +651,14 @@ export async function publishPost(
           return await postToInstagram(caption, opts.imageUrls);
         }
 
-        return {
-          success: false,
-          error: 'Instagram requires at least one image or video',
-        };
+        return { success: false, error: 'Instagram requires at least one image or video' };
       }
 
-      // ------------------------------------------------------------------
-      // LinkedIn
-      // ------------------------------------------------------------------
-      case Platform.LinkedIn: {
-        if (contentType === ContentType.Video && opts.videoUrl) {
+      case 'linkedin': {
+        if (contentType === 'video' && opts.videoUrl) {
           return await postToLinkedIn(caption, { videoUrl: opts.videoUrl });
         }
-        return await postToLinkedIn(caption, {
-          imageUrl: opts.imageUrl,
-        });
+        return await postToLinkedIn(caption, { imageUrl: opts.imageUrl });
       }
 
       default:
