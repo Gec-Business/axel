@@ -18,12 +18,15 @@ A social media management system built for [Axel Network](https://axelnetwork.or
 |-----------|-----------|
 | Frontend | Next.js 16 + React 19 + TypeScript |
 | Styling | Tailwind CSS 4 |
-| Backend | Next.js API Routes + Netlify Functions |
-| Storage | Netlify Blobs |
-| Media (large videos) | Cloudinary (free tier) |
+| Backend | Next.js API Routes |
+| Database | Supabase (PostgreSQL, free tier) |
+| Binary Assets | Netlify Blobs |
+| Large Videos | Cloudinary (free tier) |
 | AI Content | Claude API (Anthropic) |
 | Auth | iron-session (single admin password) |
 | Hosting | Netlify |
+| Cron | GitHub Actions (external, free) |
+| Backups | GitHub Actions → Git-committed JSON exports |
 
 ## Documentation
 

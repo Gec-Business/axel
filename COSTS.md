@@ -1,4 +1,4 @@
-# Monthly Cost Analysis — Axel Social Media Auto-Poster
+# Monthly Cost Analysis — Axel Social Media Auto-Poster (v2)
 
 All costs estimated for Axel Network's expected usage: ~50-100 social media posts/month across 3 platforms, with AI content generation and media asset storage.
 
@@ -8,42 +8,59 @@ All costs estimated for Axel Network's expected usage: ~50-100 social media post
 
 | Service | Tier | Monthly Cost | Notes |
 |---------|------|-------------|-------|
-| **Netlify** | Free / Starter | **$0 - $19** | Free tier likely sufficient |
+| **Netlify** | Free | **$0** | Hosting + binary asset storage (Blobs) |
+| **Supabase** | Free | **$0** | PostgreSQL database for posts, campaigns, settings |
 | **Claude API** | Pay-per-use | **$5 - $15** | AI content generation |
-| **Cloudinary** | Free | **$0** | Video storage |
+| **Cloudinary** | Free | **$0** | Large video storage |
+| **GitHub Actions** | Free | **$0** | External cron (public repo) |
 | **Meta APIs** | Free | **$0** | Facebook + Instagram posting |
 | **LinkedIn API** | Free | **$0** | LinkedIn posting |
 | **Domain** (optional) | Annual | **~$1/mo** | If using custom subdomain |
 | | | | |
-| **TOTAL** | | **$5 - $35/mo** | |
+| **TOTAL** | | **$5 - $16/mo** | |
 
 ---
 
 ## Detailed Breakdown
 
-### 1. Netlify — $0 to $19/month
+### 1. Netlify — $0/month
+
+With Supabase handling structured data, Netlify's load is reduced to hosting + serving binary assets.
 
 **Free tier includes:**
-- 100GB bandwidth/month
+- 100 GB bandwidth/month
 - 300 build minutes/month
 - 125K serverless function invocations/month
-- Netlify Blobs: 1K read/write operations per day
-- 1 scheduled function (our daily cron)
-
-**Will the free tier be enough for Axel?**
 
 | Resource | Axel's Estimated Usage | Free Limit | Enough? |
 |----------|----------------------|-----------|---------|
-| Bandwidth | ~5-10 GB/month (dashboard + asset serving) | 100 GB | Yes |
-| Build minutes | ~50 min/month (deploys) | 300 min | Yes |
-| Function invocations | ~3,000/month (API calls from dashboard + cron) | 125,000 | Yes |
-| Blob operations | ~200-500/day (post/asset CRUD) | 1,000/day | Yes |
+| Bandwidth | ~5-10 GB/month | 100 GB | Yes |
+| Build minutes | ~50 min/month | 300 min | Yes |
+| Function invocations | ~3,000/month | 125,000 | Yes |
 
-**Verdict:** Free tier should be sufficient. If the dashboard gets heavy use or many large assets are served through Netlify, upgrading to **Starter ($19/mo)** provides 1TB bandwidth and more headroom.
+**Note:** We no longer use Netlify Scheduled Functions (moved to GitHub Actions), so the 30-second timeout limitation doesn't apply.
 
-**Risk:** If social platforms fetch assets frequently (e.g., link previews, re-scraping), bandwidth could increase. Cloudinary for large media mitigates this.
+### 2. Supabase — $0/month
 
-### 2. Claude API (Anthropic) — $5 to $15/month
+**Free tier includes:**
+- 500 MB database storage
+- 50,000 rows
+- 2 GB bandwidth
+- Unlimited API requests
+- Daily backups (7-day retention)
+- Row-level security
+
+| Resource | Axel's Estimated Usage | Free Limit | Enough? |
+|----------|----------------------|-----------|---------|
+| Database size | ~10-50 MB (posts, campaigns, audit log) | 500 MB | Yes |
+| Rows | ~5,000/year (posts + campaigns + audit entries) | 50,000 | Yes |
+| API bandwidth | ~1-5 GB/month | 2 GB | Likely yes |
+
+**Verdict:** Free tier is sufficient for 2-3+ years of operation.
+
+**When to upgrade:** Supabase Pro ($25/mo) if database exceeds 500 MB or if you need point-in-time recovery or more than 50K rows. Unlikely before 2028 at current volume.
+
+### 3. Claude API (Anthropic) — $5 to $15/month
 
 Used for AI-generated bilingual content (Georgian + English).
 
@@ -51,60 +68,44 @@ Used for AI-generated bilingual content (Georgian + English).
 - Input: $3 / million tokens
 - Output: $15 / million tokens
 
-**Estimated usage per content generation session:**
-- Brand voice context + pillar guidelines: ~2,000 tokens input
-- Request (date range, pillar, campaign context): ~500 tokens input
-- Generated batch of 10-15 posts (both languages): ~4,000 tokens output
-
 **Monthly estimate:**
-| Scenario | Sessions/Month | Input Tokens | Output Tokens | Cost |
-|----------|---------------|-------------|---------------|------|
-| Light use (2-3 batches) | 3 | ~7,500 | ~12,000 | ~$0.20 |
-| Normal use (weekly batches) | 4-5 | ~12,500 | ~20,000 | ~$0.35 |
-| Heavy use (daily edits + regeneration) | 20 | ~50,000 | ~80,000 | ~$1.35 |
+| Scenario | Sessions/Month | Cost |
+|----------|---------------|------|
+| Light use (2-3 batches) | 3 | ~$0.20 |
+| Normal use (weekly batches) | 4-5 | ~$0.35 |
+| Heavy use (daily edits + regeneration) | 20 | ~$1.35 |
 
-**Realistic monthly cost: $1-5** for content generation alone.
+**With additional usage** (hashtag suggestions, schedule optimization, content rewriting): $5-15/month total.
 
-**Additional AI usage (optional):**
-- Hashtag suggestions: ~$0.50/month
-- Schedule optimization: ~$0.50/month
-- Content editing/rewriting requests: ~$1-5/month
+**Cost control:** Set a monthly spending limit of $20 in the Anthropic Console. The app also enforces a 10 generation requests/day rate limit.
 
-**Total AI budget: $5-15/month** with generous margin.
+### 4. Cloudinary — $0/month
 
-**Cost control:** Set a monthly spending limit of $20 in the [Anthropic Console](https://console.anthropic.com/) to prevent surprises.
-
-### 3. Cloudinary — $0/month
-
-**Free tier includes:**
-- 25 GB storage
-- 25 GB bandwidth/month
-- 25,000 transformations/month
+**Updated free tier (2026):**
+- 10 GB managed storage
+- 20 GB bandwidth/month
+- 300,000 total images/videos
 
 **Axel's estimated usage:**
 - Video uploads: ~5-10 videos/month, averaging 20-50 MB each
 - Monthly storage growth: ~200-500 MB
-- Bandwidth: ~2-5 GB/month (social platforms fetching videos)
+- Bandwidth: ~2-5 GB/month
 
-**Time until free tier runs out:**
-- At 500 MB/month growth: ~50 months (4+ years) before hitting 25 GB storage
-- Bandwidth resets monthly: 5 GB/month usage is well within 25 GB limit
+**Important:** Cloudinary suspends (not charges) on free tier overage. If this happens, video serving stops until the next month. Low risk at Axel's volume.
 
-**Verdict:** Free tier will last years for Axel's volume.
+### 5. GitHub Actions — $0/month
 
-### 4. Meta APIs (Facebook + Instagram) — $0/month
+Free for public repositories:
+- 2,000 minutes/month
+- Axel's usage: ~2 minutes/day (cron + backup) = ~60 min/month
 
-Meta Graph API is free for publishing to pages you manage. No rate limits concerns for Axel's volume (~50-100 posts/month total across both platforms).
+### 6. Meta APIs + LinkedIn API — $0/month
 
-### 5. LinkedIn API — $0/month
+Free for publishing to pages/accounts you manage. Rate limits (25 FB posts/day, 100 IG posts/day) are far above Axel's needs.
 
-LinkedIn Marketing API is free for posting to company pages. Share on LinkedIn product provides sufficient access.
+### 7. Custom Domain (Optional) — ~$12/year
 
-### 6. Custom Domain (Optional) — ~$12/year
-
-If Axel wants `social.axelnetwork.org` instead of `axel-social.netlify.app`:
-- Subdomain pointing to Netlify: **free** (just DNS configuration)
-- If buying a new domain: ~$12/year for a `.org` domain
+Subdomain of `axelnetwork.org` pointing to Netlify: **free** (DNS config only).
 
 ---
 
@@ -114,52 +115,59 @@ If Axel wants `social.axelnetwork.org` instead of `axel-social.netlify.app`:
 | Item | Cost |
 |------|------|
 | Netlify Free | $0 |
+| Supabase Free | $0 |
 | Claude API (light use) | $5 |
 | Cloudinary Free | $0 |
+| GitHub Actions Free | $0 |
 | **Total** | **$5/month** |
 
 ### Scenario B: Normal Operations
 | Item | Cost |
 |------|------|
 | Netlify Free | $0 |
+| Supabase Free | $0 |
 | Claude API (weekly batches + edits) | $10 |
 | Cloudinary Free | $0 |
+| GitHub Actions Free | $0 |
 | **Total** | **$10/month** |
 
-### Scenario C: Heavy Use + Starter Netlify
+### Scenario C: Heavy Use
 | Item | Cost |
 |------|------|
-| Netlify Starter | $19 |
+| Netlify Free | $0 |
+| Supabase Free | $0 |
 | Claude API (daily use) | $15 |
 | Cloudinary Free | $0 |
-| **Total** | **$34/month** |
+| GitHub Actions Free | $0 |
+| **Total** | **$15/month** |
 
 ---
 
-## Cost Comparison
-
-For context, here's what alternatives would cost:
+## Cost Comparison with Alternatives
 
 | Solution | Monthly Cost | Limitations |
 |----------|-------------|-------------|
-| **This system** | **$5-35** | Full control, custom for Axel |
-| Buffer (Team plan) | $120 | No AI generation, no asset studio, 2000 scheduled posts |
+| **This system** | **$5-15** | Full control, custom for Axel, bilingual, AI-powered |
+| Buffer (Team plan) | $120 | No AI generation, no asset studio, no approval workflow |
 | Hootsuite (Professional) | $99 | Limited AI, 1 user, no custom workflows |
 | Sprout Social | $249 | Enterprise features Axel doesn't need |
-| Later (Growth) | $40 | Instagram-focused, limited LinkedIn |
+| Later (Growth) | $40 | Instagram-focused, limited LinkedIn, no bilingual |
 
-**This custom system costs 3-25x less** than commercial alternatives and is tailored exactly to Axel's needs (bilingual Georgian/English, content pillars, approval workflow).
+**This custom system costs 3-25x less** than commercial alternatives while being tailored exactly to Axel's needs.
 
 ---
 
 ## When Costs Might Increase
 
-| Trigger | Action | New Cost |
-|---------|--------|----------|
-| High dashboard traffic (>100GB bandwidth) | Upgrade Netlify to Starter | +$19/mo |
+| Trigger | Action | Additional Cost |
+|---------|--------|----------------|
+| Database >500 MB or >50K rows | Upgrade Supabase to Pro | +$25/mo |
+| High dashboard traffic (>100 GB) | Upgrade Netlify to Starter | +$19/mo |
 | Very heavy AI generation | Increase API budget | +$10-20/mo |
-| Video storage exceeds 25GB (unlikely before 2030) | Upgrade Cloudinary to Plus ($89/mo) | +$89/mo |
-| Meta auto-boosting (Phase 2) | Ad budget is separate | Variable (Axel decides budget) |
+| Video storage >10 GB | Upgrade Cloudinary | +$89/mo |
+| Meta auto-boosting (Phase 2) | Ad spend budget | Variable (Axel decides) |
+
+**Estimated max monthly cost** (everything upgraded): ~$160/mo — still less than a single Sprout Social license.
 
 ---
 
@@ -167,8 +175,21 @@ For context, here's what alternatives would cost:
 
 | Item | Cost | Notes |
 |------|------|-------|
-| Meta App Review | $0 | Free, but takes 1-5 business days |
+| Meta App Review | $0 | Free, takes 2-7 business days. Requires screen recordings. |
 | LinkedIn App Setup | $0 | Auto-approved for company pages |
+| Supabase Account | $0 | Free signup |
 | Cloudinary Account | $0 | Free signup |
 | Anthropic API Account | $0 | Free signup, pay-per-use |
+| GitHub Repository | $0 | Public repo (already created) |
 | Development time | Variable | Building the system |
+
+---
+
+## v1 → v2 Cost Change
+
+| Change | v1 Cost | v2 Cost | Why |
+|--------|---------|---------|-----|
+| Added Supabase | N/A | $0 | Free tier. Replaces Blobs for data — much more reliable |
+| Removed Netlify Pro need | $0-19 | $0 | External cron eliminates need for Background Functions |
+| Added GitHub Actions | N/A | $0 | Free for public repos |
+| **Net change** | $5-35/mo | $5-15/mo | **Actually cheaper** in v2 while being more reliable |
